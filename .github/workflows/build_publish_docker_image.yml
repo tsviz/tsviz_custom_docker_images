@@ -9,8 +9,11 @@ jobs:
   build-and-push:
     runs-on: ubuntu-latest
     permissions:
+      actions: read
       contents: read # Allows the action to read the contents of the repository
       packages: write # Allows the action to install packages and push Docker images to GitHub Container Registry
+      id-token: write # Allows the action to create a GitHub release
+      security-events: write # Allows the action to create a GitHub release
 
     steps:
     - name: Check out the code
