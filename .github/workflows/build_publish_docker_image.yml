@@ -1,0 +1,53 @@
+name: Build and Publish Docker Image
+# On the event of a new tag push, the workflow will be triggered
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Check out the code
+      uses: actions/checkout@v2
+
+    - name: Get the version tag
+      id: get_version
+      uses: actions/github-script@v5 # Allows to run JavaScript code
+      with:
+        script: |
+          const tag = context.ref.replace('refs/tags/', '');
+          console.log(`Version tag: ${tag}`);
+          return tag;
+        result-encoding: string
+
+    - name: Log in to GitHub Container Registry
+      uses: docker/login-action@v1
+      with:
+        registry: ghcr.io
+        username: ${{ github.repository_owner }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Build and push Docker image
+      uses: docker/build-push-action@v4 # Build and push Docker images - releasing a new version by updating the tag with latest, sha, and version from the previous step using tagging strategy
+      with:
+        context: .
+        file: ./Dockerfile
+        push: true
+        tags: |
+            ghcr.io/${{ github.repository_owner }}/tsvi-spring-test:latest
+            ghcr.io/${{ github.repository_owner }}/tsvi-spring-test:${{ github.sha }}
+            ghcr.io/${{ github.repository_owner }}/tsvi-spring-test:${{ steps.get_version.outputs.result }}
+
+    - name: Create GitHub Release
+      id: create_release
+      uses: actions/create-release@v1
+      env:
+       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: ${{ steps.get_version.outputs.result }}
+        release_name: Release ${{ steps.get_version.outputs.result }}
+        draft: false
+        prerelease: false
+        body: "Release ${{ steps.get_version.outputs.result }} of the Docker image - tsvi-spring-test - built and pushed to GitHub Container Registry"
