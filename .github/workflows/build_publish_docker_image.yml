@@ -40,9 +40,9 @@ jobs:
         file: ./Dockerfile
         push: true
         tags: |
-            ghcr.io/${{ github.actor }}/tsvi-spring-test:latest
-            ghcr.io/${{ github.actor }}/tsvi-spring-test:${{ github.sha }}
-            ghcr.io/${{ github.actor }}/tsvi-spring-test:${{ steps.get_version.outputs.result }}
+            ghcr.io/tsviz/tsvi-spring-test:latest
+            ghcr.io/tsviz/tsvi-spring-test:${{ github.sha }}
+            ghcr.io/tsviz/tsvi-spring-test:${{ steps.get_version.outputs.result }}
 
     - name: Create GitHub Release
       id: create_release
