@@ -57,4 +57,4 @@ jobs:
         release_name: Release ${{ steps.get_version.outputs.result }}
         draft: false
         prerelease: false
-        body: "Release ${{ steps.get_version.outputs.result }} of the Docker image - tsvi-spring-test - built and pushed to GitHub Container Registry"
+        body: "Release ${{ steps.get_version.outputs.result }} of the Docker image - tsvi-spring-test - built and pushed to GitHub Container Registry. Direct link to the image: [ghcr.io/tsviz/tsvi-spring-test:${{ steps.get_version.outputs.result }}](https://ghcr.io/tsviz/tsvi-spring-test:${{ steps.get_version.outputs.result }})"
