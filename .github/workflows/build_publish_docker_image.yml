@@ -42,8 +42,40 @@ jobs:
         key: ${{ runner.os }}-buildx-${{ github.sha }}
         restore-keys: |
           ${{ runner.os }}-buildx-
+    
+    - name: Build Docker image
+      id: build_image
+      uses: docker/build-push-action@v4
+      with:
+        context: .
+        file: ./Dockerfile
+        push: false
+        tags: |
+            ghcr.io/tsviz/tsvi-spring-test:latest
+            ghcr.io/tsviz/tsvi-spring-test:${{ github.sha }}
+            ghcr.io/tsviz/tsvi-spring-test:${{ github.ref_name }}
+        cache-from: type=local,src=/tmp/.buildx-cache
+        cache-to: type=local,dest=/tmp/.buildx-cache
 
-    - name: Build and optionally push Docker image
+    - name: Test the Docker image
+      run: |
+        echo "Testing the Docker image..."
+        echo "Running the Docker image..."
+        echo "1. Checking the OS..."
+        echo "2. Checking the Maven version..."
+        echo "3. Checking the jq version..."
+        echo "4. Checking the curl version..."
+        echo "5. Stopping and removing the Docker container..."
+        docker run -d --name test-container ghcr.io/tsviz/tsvi-spring-test:${{ github.sha }}
+        docker exec test-container sh -c "cat /etc/*release | grep ^ID"
+        docker exec test-container mvn -v
+        docker exec test-container jq --version
+        docker exec test-container curl --version
+        docker stop test-container
+        docker rm test-container
+    
+    - name: Push the Docker image to GitHub Container Registry
+      if: ${{ env.PUSH_IMAGE }} && success()
       uses: docker/build-push-action@v4
       with:
         context: .
