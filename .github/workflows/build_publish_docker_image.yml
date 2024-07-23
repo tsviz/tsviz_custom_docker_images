@@ -1,7 +1,10 @@
 name: Build and Publish Docker Image
-# On the event of a new tag push, the workflow will be triggered
+
 on:
   push:
+    branches:
+      - main
+      - develop
     tags:
       - 'v*.*.*'
 
@@ -9,52 +12,59 @@ jobs:
   build-and-push:
     runs-on: ubuntu-latest
     permissions:
-      actions: read # Allows the action to read the contents of the repository to write a release
-      contents: write # Allows the action to read the contents of the repository
-      packages: write # Allows the action to install packages and push Docker images to GitHub Container Registry
-      id-token: write # Allows the action to create a GitHub release
-      security-events: write # Allows the action to create a GitHub release
+      actions: read
+      contents: write
+      packages: write
+      id-token: write
+      security-events: write
+
+    env:
+      PUSH_IMAGE: ${{ github.event_name == 'push' && startsWith(github.ref, 'refs/tags/') }}
 
     steps:
     - name: Check out the code
-      uses: actions/checkout@v2
-
-    - name: Get the version tag
-      id: get_version
-      uses: actions/github-script@v5 # Allows to run JavaScript code
-      with:
-        script: |
-          const tag = context.ref.replace('refs/tags/', '');
-          console.log(`Version tag: ${tag}`);
-          return tag;
-        result-encoding: string
+      uses: actions/checkout@v3
 
     - name: Log in to GitHub Container Registry
-      uses: docker/login-action@v1
+      uses: docker/login-action@v2
       with:
         registry: ghcr.io
         username: ${{ github.actor }}
         password: ${{ secrets.GITHUB_TOKEN }}
 
-    - name: Build and push Docker image
-      uses: docker/build-push-action@v4 # Build and push Docker images - releasing a new version by updating the tag with latest, sha, and version from the previous step using tagging strategy
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v2
+
+    - name: Cache Docker layers
+      uses: actions/cache@v3
+      with:
+        path: /tmp/.buildx-cache
+        key: ${{ runner.os }}-buildx-${{ github.sha }}
+        restore-keys: |
+          ${{ runner.os }}-buildx-
+
+    - name: Build and optionally push Docker image
+      uses: docker/build-push-action@v4
       with:
         context: .
         file: ./Dockerfile
-        push: true
+        push: ${{ env.PUSH_IMAGE }}
         tags: |
             ghcr.io/tsviz/tsvi-spring-test:latest
             ghcr.io/tsviz/tsvi-spring-test:${{ github.sha }}
-            ghcr.io/tsviz/tsvi-spring-test:${{ steps.get_version.outputs.result }}
+            ghcr.io/tsviz/tsvi-spring-test:${{ github.ref_name }}
+        cache-from: type=local,src=/tmp/.buildx-cache
+        cache-to: type=local,dest=/tmp/.buildx-cache
 
     - name: Create GitHub Release
+      if: startsWith(github.ref, 'refs/tags/')
       id: create_release
       uses: actions/create-release@v1
       env:
        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        tag_name: ${{ steps.get_version.outputs.result }}
-        release_name: Release ${{ steps.get_version.outputs.result }}
+        tag_name: ${{ github.ref_name }}
+        release_name: Release ${{ github.ref_name }}
         draft: false
         prerelease: false
-        body: "Release ${{ steps.get_version.outputs.result }} of the Docker image - tsvi-spring-test - built and pushed to GitHub Container Registry. Direct link to the image: [ghcr.io/tsviz/tsvi-spring-test:${{ steps.get_version.outputs.result }}](https://ghcr.io/tsviz/tsvi-spring-test:${{ steps.get_version.outputs.result }})"
+        body: "Release ${{ github.ref_name }} of the Docker image - tsvi-spring-test - built and pushed to GitHub Container Registry. Direct link to the image: [ghcr.io/tsviz/tsvi-spring-test:${{ github.ref_name }}](https://ghcr.io/tsviz/tsvi-spring-test:${{ github.ref_name }})"
