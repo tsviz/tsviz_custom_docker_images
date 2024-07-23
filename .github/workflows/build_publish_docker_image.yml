@@ -50,6 +50,7 @@ jobs:
         context: .
         file: ./Dockerfile
         push: false
+        load: true # Load the built image so that it can be used in the next steps
         tags: |
             ghcr.io/tsviz/tsvi-spring-test:latest
             ghcr.io/tsviz/tsvi-spring-test:${{ github.sha }}
