@@ -67,22 +67,27 @@ jobs:
         docker exec test-container sh -c "cat /etc/*release | grep ^ID"
         echo "----------------------------------------"
         
-        echo "2. Checking the Maven version..."
+        echo "2. Listing all installed packages using microdnf..."
+        echo "Command: docker exec test-container sh -c \"microdnf list installed\""
+        docker exec test-container sh -c "microdnf list installed"
+        echo "----------------------------------------"
+        
+        echo "3. Checking the Maven version..."
         echo "Command: docker exec test-container mvn -v"
         docker exec test-container mvn -v
         echo "----------------------------------------"
         
-        echo "3. Checking the jq version..."
+        echo "4. Checking the jq version..."
         echo "Command: docker exec test-container jq --version"
         docker exec test-container jq --version
         echo "----------------------------------------"
         
-        echo "4. Checking the curl version..."
+        echo "5. Checking the curl version..."
         echo "Command: docker exec test-container curl --version"
         docker exec test-container curl --version
         echo "----------------------------------------"
         
-        echo "5. Stopping and removing the Docker container..."
+        echo "6. Stopping and removing the Docker container..."
         echo "Command: docker stop test-container"
         docker stop test-container
         echo "Command: docker rm test-container"
