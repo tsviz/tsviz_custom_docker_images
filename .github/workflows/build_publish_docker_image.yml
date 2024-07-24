@@ -32,11 +32,11 @@ jobs:
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v2
 
-    - name: Cache Docker layers
+    - name: Cache Docker layers # Cache the Docker layers to speed up the build
       uses: actions/cache@v3
       with:
         path: /tmp/.buildx-cache
-        key: ${{ runner.os }}-buildx-${{ hashFiles('Dockerfile') }}
+        key: ${{ runner.os }}-buildx-${{ hashFiles('Dockerfile') }} # Cache the Docker layers based on the Dockerfile changes
         restore-keys: |
           ${{ runner.os }}-buildx-
     
