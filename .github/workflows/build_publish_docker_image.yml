@@ -67,9 +67,9 @@ jobs:
         docker exec test-container sh -c "cat /etc/*release | grep ^ID"
         echo "----------------------------------------"
         
-        echo "2. Listing all installed packages using microdnf..."
-        echo "Command: docker exec test-container sh -c \"microdnf list installed\""
-        docker exec test-container sh -c "microdnf list installed"
+        echo "2. Listing all installed packages using rpm..."
+        echo "Command: docker exec test-container sh -c \"rpm -qa | sort | awk 'BEGIN {print \"Package Name\"} {print NR \": \" \$1}' | column -t\""
+        docker exec test-container sh -c "rpm -qa | sort | awk 'BEGIN {print \"Package Name\"} {print NR \": \" \$1}' | column -t"
         echo "----------------------------------------"
         
         echo "3. Checking the Maven version..."
