@@ -86,8 +86,14 @@ jobs:
         echo "Command: docker exec test-container curl --version"
         docker exec test-container curl --version
         echo "----------------------------------------"
+
+        echo "6. Checking the zip and unzip versions..."
+        echo "Command: docker exec test-container zip -v"
+        docker exec test-container zip -v
+        echo "Command: docker exec test-container unzip -v"
+        docker exec test-container unzip -v
         
-        echo "6. Stopping and removing the Docker container..."
+        echo "7. Stopping and removing the Docker container..."
         echo "Command: docker stop test-container"
         docker stop test-container
         echo "Command: docker rm test-container"
